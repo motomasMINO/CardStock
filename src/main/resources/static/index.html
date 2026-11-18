@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="トレーディングカードの在庫管理システム">
+    <title>CardStock | 在庫管理</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <a href="/" class="brand">
+                <img src="/images/pica.jpg"
+                     alt=""
+                     class="brand-icon">
+                <span>CardStock</span>
+</a>
+
+            <p class="nav-label">MENU</p>
+            <a href="#dashboard" class="nav-item active">
+                <span>▦</span> ダッシュボード
+            </a>
+            <a href="#products" class="nav-item">
+                <span>▤</span> 商品・在庫管理
+            </a>
+
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                在庫管理システム
+            </div>
+        </aside>
+
+        <main class="main-content" id="dashboard">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">INVENTORY MANAGEMENT</p>
+                    <h1>在庫管理ダッシュボード</h1>
+                </div>
+                <span class="api-status" id="apiStatus">
+                    API接続確認中...
+                </span>
+            </header>
+
+            <section class="summary-grid">
+                <article class="summary-card">
+                    <p>登録商品数</p>
+                    <div class="summary-value" id="totalProducts">--</div>
+                    <span class="summary-note">登録されている商品</span>
+                </article>
+
+                <article class="summary-card">
+                    <p>総在庫数</p>
+                    <div class="summary-value" id="totalStock">--</div>
+                    <span class="summary-note">全商品の在庫合計</span>
+                </article>
+
+                <article class="summary-card">
+                    <p>在庫金額</p>
+                    <div class="summary-value" id="totalValue">--</div>
+                    <span class="summary-note">単価 × 在庫数の合計</span>
+                </article>
+
+                <article class="summary-card warning-card">
+                    <p>在庫切れ商品</p>
+                    <div class="summary-value" id="outOfStock">--</div>
+                    <span class="summary-note">在庫数が0の商品</span>
+                </article>
+            </section>
+
+            <section class="panel" id="products">
+                <div class="section-heading">
+                    <div>
+                        <h2>商品一覧</h2>
+                        <p>商品の検索・登録・在庫の管理</p>
+                    </div>
+                    <button class="button button-primary" id="newProductBtn">
+                        ＋ 商品を登録
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <div class="search-box">
+                        <span>⌕</span>
+                        <input
+                            type="search"
+                            id="searchInput"
+                            placeholder="商品名・SKUで検索..."
+                        >
+                    </div>
+
+                    <select id="categoryFilter" aria-label="カテゴリで絞り込む">
+                        <option value="">すべてのカテゴリ</option>
+                        <option value="POKEMON_CARD">ポケモンカード</option>
+                        <option value="ONE_PIECE_CARD">ワンピースカード</option>
+                        <option value="BATTLE_SPIRITS">バトルスピリッツ</option>
+                        <option value="YU_GI_OH">遊戯王</option>
+                        <option value="DUEL_MASTERS">デュエル・マスターズ</option>
+                    </select>
+
+                    <button class="button button-secondary" id="refreshBtn">
+                        更新
+                    </button>
+                </div>
+
+                <div id="message" class="message" role="status" hidden></div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>商品名</th>
+                                <th>カテゴリ</th>
+                                <th>単価</th>
+                                <th>在庫数</th>
+                                <th>在庫状況</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    商品データを読み込んでいます...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span id="resultCount">0件の商品</span>
+                    <span>CardStock Inventory</span>
+                </div>
+            </section>
+
+            <section class="panel form-panel" id="productFormPanel" hidden>
+                <div class="section-heading">
+                    <div>
+                        <h2 id="formTitle">商品登録</h2>
+                        <p>商品情報を入力してください</p>
+                    </div>
+                    <button class="button button-secondary" id="cancelBtn">
+                        閉じる
+                    </button>
+                </div>
+
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+
+                    <div class="form-grid">
+                        <label>
+                            SKU（商品管理コード）
+                            <input id="sku" maxlength="50" required
+                                   placeholder="例：PK-001">
+                        </label>
+
+                        <label>
+                            商品名
+                            <input id="name" maxlength="100" required
+                                   placeholder="例：拡張パック">
+                        </label>
+
+                        <label>
+                            カテゴリ
+                            <select id="category" required>
+                                <option value="">選択してください</option>
+                                <option value="POKEMON_CARD">ポケモンカード</option>
+                                <option value="ONE_PIECE_CARD">ワンピースカード</option>
+                                <option value="BATTLE_SPIRITS">バトルスピリッツ</option>
+                                <option value="YU_GI_OH">遊戯王</option>
+                                <option value="DUEL_MASTERS">デュエル・マスターズ</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            単価（円）
+                            <input id="price" type="number" min="0"
+                                   max="9999999999.99" step="0.01" required
+                                   placeholder="例：180">
+                        </label>
+
+                        <label>
+                            在庫数
+                            <input id="stockQuantity" type="number" min="0"
+                                   step="1" required placeholder="例：100">
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="button button-secondary"
+                                id="cancelFormBtn">キャンセル</button>
+                        <button type="submit" class="button button-primary"
+                                id="saveBtn">商品を登録</button>
+                    </div>
+                </form>
+            </section>
+
+            <footer class="page-footer">
+                CardStock — Trading Card Inventory Management
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
